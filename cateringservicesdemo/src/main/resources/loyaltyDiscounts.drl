@@ -1,0 +1,64 @@
+package cateringservicesdemo;
+import org.mule.MessageExchangePattern;
+import cateringservicesdemo.User;
+
+global org.mule.module.bpm.MessageService mule;
+
+dialect "mvel"
+	
+declare User
+	@role('event')
+end
+
+//Platinum
+rule "Decide Platinum User"
+	lock-on-active
+	when
+		$User : User( loyaltyPoints >= 500)
+	then
+		modify($User) {setdiscount( "Congratulation!! You are eligible for 20% OFF on all orders." )}
+end
+
+//Gold
+rule "Decide Gold User"
+	lock-on-active
+	when
+		$User : User( loyaltyPoints >= 200 && loyaltyPoints < 500)
+	then
+		modify($User) {setdiscount( "Congratulation!! You are eligible for 15% OFF on all orders. Collect More Loyalty points and enjoy more attractive offers !!!" )}
+end
+
+//Silver
+rule "Decide Silver User"
+	lock-on-active
+	when
+		$User : User( loyaltyPoints >= 100 && loyaltyPoints < 200)
+	then
+		modify($User) {setdiscount( "Congratulation!! You are eligible for 10% OFF on all orders. Collect More Loyalty points and enjoy more attractive offers !!!" )}
+end
+
+//Bronze
+rule "Decide Bronze User"
+	lock-on-active
+	when
+		$User : User( loyaltyPoints >= 20 && loyaltyPoints < 100)
+	then
+		modify($User) {setdiscount( "Congratulation!! You are eligible for 05% OFF on all orders. Collect More Loyalty points and enjoy more attractive offers !!!" )}
+end
+
+//Normal
+rule "Decide Normal User"
+	lock-on-active
+	when
+		$User : User(loyaltyPoints < 20)
+	then
+		modify($User) {setdiscount( "Sorry!! No Discount Available to you currently. Collect More Loyalty points and enjoy more attractive offers !!!" )}
+end
+
+rule "New user"
+	no-loop
+	when 
+		$User : User(loyaltyPoints == 0)
+	then
+		modify($User) {setdiscount( "Oops!! No Loyalty Points collected yet. Hurry Up and collect now for attractive offers !!! " )}
+end
